@@ -30,6 +30,9 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
      */
     private static final int PER_PAGE = 7;
 
+    /**
+     * The shader manager used to hold the color wheel shader
+     */
     private static ShaderManager shaderManager;
 
     /**
@@ -47,7 +50,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
      * Used to keep track of if this is the first time {@link #initGui()} has been called. <br>
      * If it is not the first time, then the screen has been changed and therefore the parent screen should also be changed.
      */
-    private boolean firstRun = false;
+    private boolean firstRun = true;
 
     private GuiButton nextPage;
     private GuiButton backPage;
@@ -59,6 +62,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
 
     public IshiharaGui() {
         this.parent = Minecraft.getMinecraft().currentScreen;
+        //Setup the shader manager
         if(shaderManager == null) {
             try {
                 shaderManager = new ShaderManager(Minecraft.getMinecraft().getResourceManager(), Ishihara.MODID + ":colorwheel");
@@ -66,6 +70,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
                 e.printStackTrace();
             }
         }
+        //Get all the deficiencies
         Ishihara.getDeficiencies((name, matrix) -> this.deficiencies.add(new Deficiency(this.deficiencies.size(), name, matrix)));
     }
 
@@ -73,12 +78,14 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
     public void initGui() {
         super.initGui();
 
-        if(this.firstRun && this.parent != null) {
+        //If this isnt the first run, and the parent isn't null, meaning that the screen has changed and needs refreshing.
+        if(!this.firstRun && this.parent != null) {
             this.parent.initGui();
         }
-        this.firstRun = true;
+        this.firstRun = false;
         this.addButton(new GuiButton(5, this.width / 4 - 50, this.height - 40, 100, 20, I18n.format("gui.back")));
 
+        //Only show the next/back page buttons if there is more than one page
         if(this.deficiencies.size() / PER_PAGE > 1) {
             int width = MathHelper.clamp(IshiharaGui.this.width / 4, 25, 75);
             int centerX = (int) (11/16F * IshiharaGui.this.width);
@@ -94,9 +101,9 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
         this.drawDefaultBackground();
         super.drawScreen(mouseX, mouseY, partialTicks);
 
+        //Render the deficiencies. Renders everything except the color wheel
         for (Deficiency deficiency : this.deficiencies) {
             deficiency.render(false, mouseX, mouseY);
-            deficiency.render(true, mouseX, mouseY);
         }
 
         int centerX = this.width / 4;
@@ -104,6 +111,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
 
         int radii = Math.min(centerX, centerY) / 2;
 
+        //Render the large color wheel on the left of the screen
         if(shaderManager != null) {
             shaderManager.useShader();
             BufferBuilder buff = Tessellator.getInstance().getBuffer();
@@ -118,13 +126,6 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
             Tessellator.getInstance().draw();
             shaderManager.endShader();
         }
-
-        drawUncoloredScreen(mouseX, mouseY, partialTicks);
-    }
-
-    @Override
-    public void confirmClicked(boolean result, int id) {
-        super.confirmClicked(result, id);
     }
 
     /**
@@ -133,13 +134,17 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
      */
     @Override
     public void drawUncoloredScreen(int mouseX, int mouseY, float partialTicks) {
+        //Render all the color wheels on the deficiency entries
         for (Deficiency deficiency : this.deficiencies) {
-//            deficiency.render(true, mouseX, mouseY);
+            deficiency.render(true, mouseX, mouseY);
         }
     }
 
     @Override
     protected void keyTyped(char typedChar, int keyCode) throws IOException {
+        //If the escape key has been pressed instead of doing the close that would run `initScreen`
+        //on the parent screen, just quietly display the parent screen. Means anything typed or
+        //selected stays the same. Makes this screen act like an overlay.
         if (keyCode == Keyboard.KEY_ESCAPE) {
             Ishihara.setScreenQuietly(false, this.parent);
         }
@@ -147,10 +152,12 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
 
     @Override
     protected void actionPerformed(GuiButton button) throws IOException {
+        //exit button
         if(button.id == 5) {
             Ishihara.setScreenQuietly(false, IshiharaGui.this.parent);
 
         }
+        //next page button
         if(button.id == 6) {
             this.page = Math.min(this.page + 1, this.deficiencies.size() / PER_PAGE);
             if(this.page == this.deficiencies.size() / PER_PAGE) {
@@ -158,6 +165,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
             }
             this.backPage.enabled = true;
         }
+        //previous page button
         if(button.id == 7) {
             this.page = Math.max(this.page - 1, 0);
             if(this.page == 0) {
@@ -169,6 +177,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
 
     @Override
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
+        //Go through the deficiency. If the mouse is over it (deficiency.selected), then set that as the active deficiency
         for (Deficiency deficiency : this.deficiencies) {
             if(deficiency.selected) {
                 IshiharaRenderer.matrix.put(deficiency.matrix);
@@ -216,18 +225,23 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
          * @param mouseY The mouse y
          */
         private void render(boolean wheel, int mouseX, int mouseY) {
+            //If it is in the current page. Takes advantage of integer division
             if(this.index / IshiharaGui.PER_PAGE == IshiharaGui.this.page) {
                 int centerX = (int) (11/16F * IshiharaGui.this.width);
                 int hWidth = MathHelper.clamp(IshiharaGui.this.width / 4, 25, 100);
                 int height = 30;
+                //Total deficiencies to show on this page
                 int total = Math.min(IshiharaGui.this.deficiencies.size() - IshiharaGui.PER_PAGE * IshiharaGui.this.page, IshiharaGui.PER_PAGE);
+                //The y start of this entry
                 int start = (IshiharaGui.this.height / 2) - (total * height) / 2 + (this.index % IshiharaGui.PER_PAGE) * height;
 
+                //If we should draw the wheel only. Used for uncorrected rendering
                 if(wheel) {
                     int radii = 10;
                     int wheelx = centerX - hWidth + height/2;
                     int wheely = start + height / 2;
 
+                    //Set the shader to use the deficiency and set the deficiencies matrix values.
                     shaderManager.getShaderUniformOrDefault("UseDeficiency").set(1);
                     shaderManager.getShaderUniformOrDefault("Deficiency0").set(this.matrix[0], this.matrix[1], this.matrix[2]);
                     shaderManager.getShaderUniformOrDefault("Deficiency1").set(this.matrix[3], this.matrix[4], this.matrix[5]);
@@ -243,7 +257,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
                     shaderManager.getShaderUniformOrDefault("UseDeficiency").set(0);
                     shaderManager.endShader();
                 } else {
-
+                    //Draw the text + background color.
                     int color = 0xFFAAAAAA;
                     if(mouseX > centerX - hWidth && mouseY > start && mouseX < centerX + hWidth && mouseY < start + height) {
                         color = 0xFFAAAAEE;
