@@ -38,11 +38,6 @@ public class Ishihara {
     public static KeyBinding guiBinding;
     public static File dir = new File(mc.gameDir, "colorblind.json");
 
-    /**
-     * The matrix that holds the current values
-     */
-    public static GroupedMatrix matrix;
-
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
         guiBinding = new KeyBinding("key." + MODID + ".desc", -1, MODID);
@@ -233,27 +228,5 @@ public class Ishihara {
         if(guiBinding.isPressed() && !(mc.currentScreen instanceof IshiharaGui)) {
             setScreenQuietly(true, new IshiharaGui());
         }
-    }
-
-    /**
-     * Used to work around the issue that Minecraft's ShaderManager doesn't allow for 3x3 matrices <br>
-     * Splits the matrix uniform up into 3 vec3s. Top, middle and base.
-     */
-    public static class GroupedMatrix {
-        private final ShaderUniform top, middle, base;
-
-        public GroupedMatrix(ShaderUniform top, ShaderUniform middle, ShaderUniform base) {
-            this.top = top;
-            this.middle = middle;
-            this.base = base;
-        }
-
-        public void put(float... afloat) {
-            this.top.set(afloat[0], afloat[1], afloat[2]);
-            this.middle.set(afloat[3], afloat[4], afloat[5]);
-            this.base.set(afloat[6], afloat[7], afloat[8]);
-        }
-
-
     }
 }

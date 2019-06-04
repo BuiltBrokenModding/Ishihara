@@ -171,7 +171,7 @@ public class IshiharaGui extends GuiScreen implements UncorrectedGui {
     protected void mouseClicked(int mouseX, int mouseY, int mouseButton) throws IOException {
         for (Deficiency deficiency : this.deficiencies) {
             if(deficiency.selected) {
-                Ishihara.matrix.put(deficiency.matrix);
+                IshiharaRenderer.matrix.put(deficiency.matrix);
                 break;
             }
         }

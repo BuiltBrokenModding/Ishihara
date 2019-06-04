@@ -9,6 +9,7 @@ import net.minecraft.client.resources.IResourceManager;
 import net.minecraft.client.shader.Shader;
 import net.minecraft.client.shader.ShaderGroup;
 import net.minecraft.client.shader.ShaderManager;
+import net.minecraft.client.shader.ShaderUniform;
 import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -35,6 +36,11 @@ public class IshiharaRenderer {
      * Used to keep track of if the screen has changed size, as if it has then the framebuffer should be re-initialized.
      */
     private static int previousWidth, previousHeight;
+
+    /**
+     * The matrix that holds the current values
+     */
+    public static GroupedMatrix matrix;
 
     @SubscribeEvent
     public static void onRenderTick(TickEvent.RenderTickEvent event) {
@@ -86,8 +92,8 @@ public class IshiharaRenderer {
             for (Shader shader : shaderGroup.listShaders) {
                 ShaderManager manager = shader.getShaderManager();
                 if(manager.programFilename.equals("ishihara:ishihara")) {
-                    Ishihara.matrix = new Ishihara.GroupedMatrix(manager.getShaderUniform("Deficiency0"), manager.getShaderUniform("Deficiency1"), manager.getShaderUniform("Deficiency2"));
-                    Ishihara.matrix.put(1.0F, 0.0F, 0.0F,
+                    matrix = new GroupedMatrix(manager.getShaderUniform("Deficiency0"), manager.getShaderUniform("Deficiency1"), manager.getShaderUniform("Deficiency2"));
+                    matrix.put(1.0F, 0.0F, 0.0F,
                             0F, 1.0F, 0F,
                             0.0F, 0.0F, 1.0F);
 
@@ -95,6 +101,26 @@ public class IshiharaRenderer {
             }
         } catch (IOException e) {
             Ishihara.logger.error("Error loading shader", e);
+        }
+    }
+
+    /**
+     * Used to work around the issue that Minecraft's ShaderManager doesn't allow for 3x3 matrices <br>
+     * Splits the matrix uniform up into 3 vec3s. Top, middle and base.
+     */
+    public static class GroupedMatrix {
+        private final ShaderUniform top, middle, base;
+
+        public GroupedMatrix(ShaderUniform top, ShaderUniform middle, ShaderUniform base) {
+            this.top = top;
+            this.middle = middle;
+            this.base = base;
+        }
+
+        public void put(float... afloat) {
+            this.top.set(afloat[0], afloat[1], afloat[2]);
+            this.middle.set(afloat[3], afloat[4], afloat[5]);
+            this.base.set(afloat[6], afloat[7], afloat[8]);
         }
     }
 
