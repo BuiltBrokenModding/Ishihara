@@ -1,23 +1,37 @@
-# eclipse
 bin
-*.launch
-.settings
-.metadata
-.classpath
-.project
-
-# idea
-out
-*.ipr
-*.iws
-*.iml
-.idea
-
-# gradle
-build
-.gradle
-
-# other
-eclipse
 run
-classes
+*.class
+.gradle
+.settings
+.classpath
+build
+.project
+*.launch
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+*.psd
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+maven.bat
+
+SBM-Elevator-Block\.txt
+
+Elevators\.iws
+
+Elevators\.ipr
+
+Elevators\.iml
+
+out/
+
+output/
+
+CompiledWith\.txt
+
+changelog\.html
+
+\.DS_Store
+
+*.iml
