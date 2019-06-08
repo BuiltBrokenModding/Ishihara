@@ -2,9 +2,43 @@
   "vertex": "ishihara:colorwheel",
   "fragment": "ishihara:colorwheel",
   "uniforms": [
-    { "name": "UseDeficiency", "type": "float", "count": 1, "values": [ 1.0 ] },
-    { "name": "Deficiency0", "type": "float", "count": 3, "values": [ 1.0, 0.0, 0.0] },
-    { "name": "Deficiency1", "type": "float", "count": 3, "values": [ 0.0, 1.0, 0.0] },
-    { "name": "Deficiency2", "type": "float", "count": 3, "values": [ 0.0, 0.0, 1.0] }
+    {
+      "name": "UseDeficiency",
+      "type": "float",
+      "count": 1,
+      "values": [
+        1.0
+      ]
+    },
+    {
+      "name": "Deficiency0",
+      "type": "float",
+      "count": 3,
+      "values": [
+        1.0,
+        0.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Deficiency1",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0.0,
+        1.0,
+        0.0
+      ]
+    },
+    {
+      "name": "Deficiency2",
+      "type": "float",
+      "count": 3,
+      "values": [
+        0.0,
+        0.0,
+        1.0
+      ]
+    }
   ]
 }

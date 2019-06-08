@@ -5,6 +5,8 @@
     "description": "Simulates colorblindness",
     "version": "${version}",
     "mcversion": "${mcversion}",
-    "authorList": ["Wyn Price"]
+    "authorList": [
+      "Wyn Price"
+    ]
   }
 ]

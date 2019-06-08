@@ -35,3 +35,9 @@ changelog\.html
 \.DS_Store
 
 *.iml
+
+*.ipr
+
+*.iws
+
+Ishihara\.txt

@@ -3,9 +3,7 @@ package com.builtbroken.ishihara;
 import com.google.gson.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.*;
-import net.minecraft.client.resources.IReloadableResourceManager;
 import net.minecraft.client.settings.KeyBinding;
-import net.minecraft.client.shader.*;
 import net.minecraft.util.JsonUtils;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraftforge.client.event.GuiScreenEvent;
@@ -26,11 +24,11 @@ import java.util.function.BiConsumer;
 /**
  * @author Wyn Price
  */
-@Mod(modid = Ishihara.MODID, name = Ishihara.NAME, version = Ishihara.VERSION, clientSideOnly = true)
+@Mod(modid = Ishihara.MODID, name = "Ishihara", version = Ishihara.VERSION, clientSideOnly = true)
 @Mod.EventBusSubscriber
-public class Ishihara {
+public class Ishihara
+{
     public static final String MODID = "ishihara";
-    public static final String NAME = "Ishihara";
     public static final String VERSION = "1.0";
     public static Logger logger = LogManager.getLogger(MODID);
 
@@ -39,7 +37,8 @@ public class Ishihara {
     public static File dir = new File(mc.gameDir, "colorblind.json");
 
     @Mod.EventHandler
-    public void init(FMLInitializationEvent event) {
+    public void init(FMLInitializationEvent event)
+    {
         guiBinding = new KeyBinding("key." + MODID + ".desc", -1, MODID);
         guiBinding.setKeyModifierAndCode(KeyModifier.CONTROL, Keyboard.KEY_N);
         ClientRegistry.registerKeyBinding(guiBinding);
@@ -47,49 +46,66 @@ public class Ishihara {
 
     /**
      * Loads all the deficiencies in the json file, and passes them to {@code cons}
+     *
      * @param cons The consumer to take in the deficiency name and matrix values.
      */
-    public static void getDeficiencies(BiConsumer<String, float[]> cons) {
+    public static void getDeficiencies(BiConsumer<String, float[]> cons)
+    {
         //Check that the file exists, and if not try and create a new file
-        if (!dir.exists()) {
-            try {
-                if(dir.createNewFile()) {
+        if (!dir.exists())
+        {
+            try
+            {
+                if (dir.createNewFile())
+                {
                     writeDefaultValues();
-                } else {
+                }
+                else
+                {
                     throw new FileNotFoundException("Unable to create " + dir.getAbsolutePath() + " as a file");
                 }
-            } catch (IOException e) {
+            }
+            catch (IOException e)
+            {
                 logger.error("Unable to create new file", e);
             }
         }
 
         //Consume the identity deficiency. This is the only one that isn't in the json file
-        cons.accept("identity", new float[]{1,0,0,0,1,0,0,0,1});
+        cons.accept("identity", new float[]{1, 0, 0, 0, 1, 0, 0, 0, 1});
 
         JsonObject parsed;
-        try {
+        try
+        {
             JsonElement parse = new JsonParser().parse(new InputStreamReader(new FileInputStream(dir)));
-            if(parse.isJsonNull()) {
+            if (parse.isJsonNull())
+            {
                 Ishihara.writeDefaultValues();
                 parse = new JsonParser().parse(new InputStreamReader(new FileInputStream(dir)));
             }
-            if(parse.isJsonNull()) {
+            if (parse.isJsonNull())
+            {
                 throw new IllegalArgumentException("Error loading json. If this problem persists please delete the colorblind.json");
             }
             parsed = parse.getAsJsonObject();
-        } catch (IOException e) {
+        }
+        catch (IOException e)
+        {
             throw new RuntimeException("Unable to parse json file, " + dir.getAbsolutePath(), e);
         }
 
         //Get the "values" array in the json file, and iterate through it. For each element get the matrix array and
         //put the values into a float[9], then have the consumer consume the "name" property and the matrix values.
         JsonArray values = JsonUtils.getJsonArray(parsed, "values");
-        for (JsonElement value : values) {
-            if(value.isJsonObject()) {
+        for (JsonElement value : values)
+        {
+            if (value.isJsonObject())
+            {
                 JsonObject obj = value.getAsJsonObject();
                 JsonArray matrix = obj.getAsJsonArray("matrix");
                 float[] afloat = new float[9];
-                for (int i = 0; i < 9; i++) {
+                for (int i = 0; i < 9; i++)
+                {
                     afloat[i] = matrix.get(i).getAsFloat();
                 }
                 cons.accept(obj.get("name").getAsString(), afloat);
@@ -101,7 +117,8 @@ public class Ishihara {
     /**
      * Writes the default values of the json file.
      */
-    private static void writeDefaultValues() {
+    private static void writeDefaultValues()
+    {
         logger.info("Writing colorblind.json file");
         JsonArray arr = new JsonArray();
 
@@ -140,22 +157,28 @@ public class Ishihara {
         obj.add("values", arr);
 
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
-        try(FileWriter fw = new FileWriter(dir)) {
+        try (FileWriter fw = new FileWriter(dir))
+        {
             gson.toJson(obj, fw);
-        } catch (IOException e) {
-            logger.error("Error writing to file " + dir.getAbsolutePath(),e);
+        }
+        catch (IOException e)
+        {
+            logger.error("Error writing to file " + dir.getAbsolutePath(), e);
         }
     }
 
 
     /**
      * Converts an array of doubles to a JsonArray
+     *
      * @param doubles the doubles to be converted
      * @return A JsonArray composing of the input doubles.
      */
-    private static JsonArray convertToArray(double... doubles) {
+    private static JsonArray convertToArray(double... doubles)
+    {
         JsonArray arr = new JsonArray();
-        for (double d : doubles) {
+        for (double d : doubles)
+        {
             arr.add(d);
         }
         return arr;
@@ -164,10 +187,12 @@ public class Ishihara {
     /**
      * A copy of {@link Minecraft#displayGuiScreen(GuiScreen)}, without the modifying of the previous gui screen <br>
      * Allows for a seemless transition between guis.
-     * @param initlize should the new gui screen be initilized
+     *
+     * @param initlize    should the new gui screen be initilized
      * @param guiScreenIn the screen to display
      */
-    public static void setScreenQuietly(boolean initlize, GuiScreen guiScreenIn) {
+    public static void setScreenQuietly(boolean initlize, GuiScreen guiScreenIn)
+    {
 
         if (guiScreenIn == null && mc.world == null)
         {
@@ -175,7 +200,7 @@ public class Ishihara {
         }
         else if (guiScreenIn == null && mc.player.getHealth() <= 0.0F)
         {
-            guiScreenIn = new GuiGameOver((ITextComponent)null);
+            guiScreenIn = new GuiGameOver((ITextComponent) null);
         }
 
         if (guiScreenIn instanceof GuiMainMenu || guiScreenIn instanceof GuiMultiplayer)
@@ -188,7 +213,8 @@ public class Ishihara {
 
         if (guiScreenIn != null)
         {
-            if(initlize) {
+            if (initlize)
+            {
                 mc.setIngameNotInFocus();
                 KeyBinding.unPressAllKeys();
 
@@ -217,15 +243,19 @@ public class Ishihara {
     }
 
     @SubscribeEvent
-    public static void keyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event) {
-        if(Keyboard.isKeyDown(guiBinding.getKeyCode()) && guiBinding.getKeyConflictContext().isActive() && guiBinding.getKeyModifier().isActive(guiBinding.getKeyConflictContext()) && !(mc.currentScreen instanceof IshiharaGui)) {
+    public static void keyPressed(GuiScreenEvent.KeyboardInputEvent.Pre event)
+    {
+        if (Keyboard.isKeyDown(guiBinding.getKeyCode()) && guiBinding.getKeyConflictContext().isActive() && guiBinding.getKeyModifier().isActive(guiBinding.getKeyConflictContext()) && !(mc.currentScreen instanceof IshiharaGui))
+        {
             setScreenQuietly(true, new IshiharaGui());
         }
     }
 
     @SubscribeEvent
-    public static void keyPressed(InputEvent.KeyInputEvent event) {
-        if(guiBinding.isPressed() && !(mc.currentScreen instanceof IshiharaGui)) {
+    public static void keyPressed(InputEvent.KeyInputEvent event)
+    {
+        if (guiBinding.isPressed() && !(mc.currentScreen instanceof IshiharaGui))
+        {
             setScreenQuietly(true, new IshiharaGui());
         }
     }
