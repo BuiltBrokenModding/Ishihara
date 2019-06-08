@@ -5,3 +5,5 @@ ishihara.tritanopes=Tritanopes
 ishihara.cone_monochromats=Cone Monochromats
 ishihara.rod_monochromats=Rod Monochromats
 ishihara.green_cone_monochromat=Green Cone Monochromat
+
+key.ishihara.desc=Shader Selector
